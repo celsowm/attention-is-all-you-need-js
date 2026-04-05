@@ -1,12 +1,12 @@
 
-import { Card, CardContent, Stack, Typography } from '@mui/material';
+import { Box, Card, CardContent, Stack, Table, TableBody, TableCell, TableHead, TableRow, Typography } from '@mui/material';
 import { Bar, BarChart, CartesianGrid, Cell, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { useI18n } from '../i18n/I18nProvider';
 import AttentionHeatmap from './AttentionHeatmap';
 
 const palette = ['#7c4dff', '#26c6da', '#ffca28', '#66bb6a', '#ef5350', '#ab47bc', '#5c6bc0', '#ffa726'];
 
-export default function ChartsPanel({ step }) {
+export default function ChartsPanel({ step, generationStep }) {
   const { t } = useI18n();
   if (!step) return null;
 
@@ -14,7 +14,51 @@ export default function ChartsPanel({ step }) {
   let chart = null;
   let title = '';
 
-  if (step.id === 'tokenization') {
+  if (step.id === 'decode') {
+    const current = generationStep || (step.payload.generationSteps ? step.payload.generationSteps[0] : null);
+    if (current) {
+      title = t('charts.strategyCompare');
+      chart = (
+        <Stack spacing={3}>
+          <Box>
+            <Typography variant="subtitle2" sx={{ mb: 1.5 }}>{t('player.poolBreakdown')}</Typography>
+            <Table size="small">
+              <TableHead>
+                <TableRow>
+                  <TableCell sx={{ fontSize: '0.75rem' }}>{t('table.token')}</TableCell>
+                  <TableCell sx={{ fontSize: '0.75rem' }}>{t('table.probability')}</TableCell>
+                  <TableCell sx={{ fontSize: '0.75rem' }}>{t('table.normalizedProbability')}</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {(current.candidatePool || []).map((item) => (
+                  <TableRow key={`${current.step}-pool-${item.tokenId ?? item.index}`} selected={item.token === current.chosenTokenText}>
+                    <TableCell sx={{ fontSize: '0.75rem' }}>{item.token}</TableCell>
+                    <TableCell sx={{ fontSize: '0.75rem' }}>{item.probability}</TableCell>
+                    <TableCell sx={{ fontSize: '0.75rem' }}>{item.normalizedProbability}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </Box>
+          <Box>
+            <Typography variant="subtitle2" sx={{ mb: 1.5 }}>{t('player.compare')}</Typography>
+            <ResponsiveContainer width="100%" height={200}>
+              <BarChart data={current.strategyComparison}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="strategy" tickFormatter={(value) => t(`strategy.${value}`)} fontSize={10} />
+                <YAxis domain={[0, 1]} fontSize={10} />
+                <Tooltip formatter={(value) => value} labelFormatter={(value) => t(`strategy.${value}`)} />
+                <Bar dataKey="normalizedProbability">
+                  {current.strategyComparison.map((entry, index) => <Cell key={`${entry.strategy}-${index}`} fill={palette[index % palette.length]} />)}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </Box>
+        </Stack>
+      );
+    }
+  } else if (step.id === 'tokenization') {
     title = t('charts.tokenIds');
     const tokens = step.payload.tokensDisplay ?? step.payload.tokens;
     data = tokens.map((token, index) => ({ token, id: step.payload.ids[index] }));
@@ -71,8 +115,17 @@ export default function ChartsPanel({ step }) {
   }
 
   if (!chart) {
-    return <Card sx={{ height: '100%' }}><CardContent><Typography variant="h5" sx={{ mb: 1.5 }}>{t('charts.title')}</Typography><Typography color="text.secondary">{t('charts.empty')}</Typography></CardContent></Card>;
+    return <Card sx={{ height: '100%' }}><CardContent sx={{ p: 2.5 }}><Typography variant="h6" sx={{ mb: 1 }}>{t('charts.title')}</Typography><Typography variant="body2" color="text.secondary">{t('charts.empty')}</Typography></CardContent></Card>;
   }
 
-  return <Card sx={{ height: '100%' }}><CardContent><Typography variant="h5" sx={{ mb: 1.5 }}>{title}</Typography>{chart}</CardContent></Card>;
+  return (
+    <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+      <CardContent sx={{ p: 2.5, '&:last-child': { pb: 2.5 } }}>
+        <Typography variant="h6" sx={{ mb: 2 }}>{title}</Typography>
+        <Box sx={{ width: '100%' }}>
+          {chart}
+        </Box>
+      </CardContent>
+    </Card>
+  );
 }

@@ -72,102 +72,110 @@ function AppContent({ traceState }) {
   };
 
   return (
-    <Box sx={{ py: 4 }}>
-      <Container maxWidth="xl">
-        <Stack spacing={3}>
-          <HeroHeader model={model} />
+    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden' }}>
+      <HeroHeader model={model} />
 
-          {error ? <Alert severity="error">{error}</Alert> : null}
+      <Box sx={{ flex: 1, display: 'flex', minHeight: 0 }}>
+        {/* Sidebar */}
+        <Box
+          sx={{
+            width: 340,
+            borderRight: '1px solid rgba(255,255,255,0.06)',
+            overflowY: 'auto',
+            bgcolor: 'background.default',
+            p: 2,
+            display: { xs: 'none', lg: 'block' },
+          }}
+        >
+          <PromptPanel
+            prompt={prompt}
+            setPrompt={setPrompt}
+            maxNewTokens={maxNewTokens}
+            setMaxNewTokens={setMaxNewTokens}
+            topK={topK}
+            setTopK={setTopK}
+            topP={topP}
+            setTopP={setTopP}
+            temperature={temperature}
+            setTemperature={setTemperature}
+            seed={seed}
+            setSeed={setSeed}
+            decodingStrategy={decodingStrategy}
+            setDecodingStrategy={setDecodingStrategy}
+            running={running}
+            loadingModel={loadingModel}
+            model={model}
+            onLoadModel={() => ensureModelLoaded(locale)}
+            onRun={() => runInference(locale)}
+            onNext={goNext}
+            onBack={goBack}
+            onReset={reset}
+            activeStep={activeStep}
+            maxStep={(localizedSteps?.length || 1) - 1}
+            mode={mode}
+            setMode={setMode}
+            onOpenGlossary={() => setGlossaryOpen(true)}
+            onExportTrace={onExportTrace}
+            traceAvailable={(trace.steps?.length || 0) > 1}
+            localePreference={localePreference}
+            setLocalePreference={setLocalePreference}
+            promptLocale={promptLocale}
+            getLanguageLabel={getLanguageLabel}
+          />
+        </Box>
 
-          <Grid container spacing={3}>
-            <Grid size={{ xs: 12, lg: 4 }}>
-              <PromptPanel
-                prompt={prompt}
-                setPrompt={setPrompt}
-                maxNewTokens={maxNewTokens}
-                setMaxNewTokens={setMaxNewTokens}
-                topK={topK}
-                setTopK={setTopK}
-                topP={topP}
-                setTopP={setTopP}
-                temperature={temperature}
-                setTemperature={setTemperature}
-                seed={seed}
-                setSeed={setSeed}
-                decodingStrategy={decodingStrategy}
-                setDecodingStrategy={setDecodingStrategy}
-                running={running}
-                loadingModel={loadingModel}
-                model={model}
-                onLoadModel={() => ensureModelLoaded(locale)}
-                onRun={() => runInference(locale)}
-                onNext={goNext}
-                onBack={goBack}
-                onReset={reset}
-                activeStep={activeStep}
-                maxStep={(localizedSteps?.length || 1) - 1}
-                mode={mode}
-                setMode={setMode}
-                onOpenGlossary={() => setGlossaryOpen(true)}
-                onExportTrace={onExportTrace}
-                traceAvailable={(trace.steps?.length || 0) > 1}
-                localePreference={localePreference}
-                setLocalePreference={setLocalePreference}
-                promptLocale={promptLocale}
-                getLanguageLabel={getLanguageLabel}
-              />
-            </Grid>
-            <Grid size={{ xs: 12, lg: 8 }}>
+        {/* Main Content Area */}
+        <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, bgcolor: '#020617' }}>
+          {/* Top Bar for Stepper and Status */}
+          <Box sx={{ p: 2, borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+            <Stack spacing={2}>
               <InferenceStepper steps={localizedSteps} activeStep={activeStep} onStepChange={setActiveStep} />
-            </Grid>
-          </Grid>
+              <Stack direction="row" spacing={1} flexWrap="wrap">
+                <Chip size="small" icon={<SmartToyIcon />} label={t('chip.model', { modelId: model.modelId.split('/').pop() })} color="primary" />
+                <Chip size="small" icon={<TokenIcon />} label={t('chip.tokens', { value: trace.tokensDisplay?.join(' • ') || trace.tokens?.join(' • ') || '—' })} variant="outlined" />
+                <Chip size="small" icon={<ScienceIcon />} label={t('chip.nextToken', { value: trace.nextToken || '—' })} color="secondary" variant="outlined" />
+                <Chip size="small" icon={<TimerIcon />} label={t('chip.timing', { value: trace.metrics?.averageStepMs || 0 })} variant="outlined" />
+                <Chip size="small" label={t('chip.strategy', { value: t(`strategy.${trace.decoding?.strategy || decodingStrategy}`) })} variant="outlined" />
+              </Stack>
+            </Stack>
+          </Box>
 
-          <Stack direction="row" spacing={1} flexWrap="wrap">
-            <Chip icon={<SmartToyIcon />} label={t('chip.model', { modelId: model.modelId })} color="primary" />
-            <Chip icon={<TokenIcon />} label={t('chip.tokens', { value: trace.tokensDisplay?.join(' • ') || trace.tokens?.join(' • ') || '—' })} variant="outlined" />
-            <Chip icon={<ScienceIcon />} label={t('chip.nextToken', { value: trace.nextToken || '—' })} color="secondary" variant="outlined" />
-            <Chip icon={<TagIcon />} label={t('chip.seed', { value: trace.decoding?.seed || seed })} variant="outlined" />
-            <Chip icon={<TimerIcon />} label={t('chip.timing', { value: trace.metrics?.averageStepMs || 0 })} variant="outlined" />
-            <Chip label={t('chip.strategy', { value: t(`strategy.${trace.decoding?.strategy || decodingStrategy}`) })} variant="outlined" />
-            <Chip label={t('chip.finalText', { value: trace.finalText || '—' })} variant="outlined" />
-          </Stack>
-
-          <Grid container spacing={3}>
-            <Grid size={{ xs: 12, xl: 5 }}>
-              <StepDetails step={localizedCurrentStep} mode={mode} />
-            </Grid>
-            <Grid size={{ xs: 12, xl: 7 }}>
-              <ChartsPanel step={localizedCurrentStep} />
-            </Grid>
-          </Grid>
-
-          <Grid container spacing={3}>
-            <Grid size={{ xs: 12, lg: 7 }}>
-              <TokenScene tokens={sceneInfo.tokens} tokensDisplay={sceneInfo.tokensDisplay} focusIndex={sceneInfo.focusIndex} attention={sceneInfo.attention} />
-            </Grid>
-            <Grid size={{ xs: 12, lg: 5 }}>
-              <Box sx={{ p: 3, borderRadius: 6, height: '100%', bgcolor: 'background.paper', border: '1px solid rgba(255,255,255,0.06)' }}>
-                <Stack spacing={2}>
-                  <Typography variant="h5">{t('guide.title')}</Typography>
-                  <Typography color="text.secondary">{t('guide.body')}</Typography>
-                  <Typography component="div" color="text.secondary">
-                    {t('guide.observe')}
-                    <ul>
-                      <li>{t('guide.item1')}</li>
-                      <li>{t('guide.item2')}</li>
-                      <li>{t('guide.item3')}</li>
-                    </ul>
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">{t('guide.focus', { token: activeTokenText })}</Typography>
+          {/* Grid Layout for Details, Charts, and Scene */}
+          <Box sx={{ flex: 1, overflow: 'hidden', p: 2 }}>
+            <Grid container spacing={2} sx={{ height: '100%' }}>
+              <Grid size={{ xs: 12, xl: 4 }} sx={{ height: '100%' }}>
+                <Box sx={{ height: '100%', overflowY: 'auto' }}>
+                  <StepDetails step={localizedCurrentStep} generationStep={generationStep} mode={mode} />
+                </Box>
+              </Grid>
+              <Grid size={{ xs: 12, xl: 4 }} sx={{ height: '100%' }}>
+                <Box sx={{ height: '100%', overflowY: 'auto' }}>
+                  <ChartsPanel step={localizedCurrentStep} generationStep={generationStep} />
+                </Box>
+              </Grid>
+              <Grid size={{ xs: 12, xl: 4 }} sx={{ height: '100%' }}>
+                <Stack spacing={2} sx={{ height: '100%' }}>
+                  <Box sx={{ flex: 1, minHeight: 0 }}>
+                    <TokenScene tokens={sceneInfo.tokens} tokensDisplay={sceneInfo.tokensDisplay} focusIndex={sceneInfo.focusIndex} attention={sceneInfo.attention} />
+                  </Box>
+                  <Box sx={{ p: 2, borderRadius: 3, bgcolor: 'background.paper', border: '1px solid rgba(255,255,255,0.06)' }}>
+                    <Typography variant="subtitle2" gutterBottom>{t('guide.title')}</Typography>
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>{t('guide.body')}</Typography>
+                    <Typography variant="caption" color="primary.main">{t('guide.focus', { token: activeTokenText })}</Typography>
+                  </Box>
                 </Stack>
-              </Box>
+              </Grid>
             </Grid>
-          </Grid>
+          </Box>
 
-          <GenerationPlayer generationSteps={trace.generationSteps} selectedStep={selectedGenerationStep} onStepChange={setSelectedGenerationStep} />
-          <GlossaryDialog open={glossaryOpen} onClose={() => setGlossaryOpen(false)} />
-        </Stack>
-      </Container>
+          {/* Footer for Player */}
+          <Box sx={{ p: 1.5, borderTop: '1px solid rgba(255,255,255,0.06)', bgcolor: 'background.paper' }}>
+            <GenerationPlayer generationSteps={trace.generationSteps} selectedStep={selectedGenerationStep} onStepChange={setSelectedGenerationStep} />
+          </Box>
+        </Box>
+      </Box>
+
+      <GlossaryDialog open={glossaryOpen} onClose={() => setGlossaryOpen(false)} />
     </Box>
   );
 }

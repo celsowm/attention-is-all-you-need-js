@@ -27,91 +27,77 @@ export default function PromptPanel(props) {
   const examples = useMemo(() => getPromptExamples(promptLocale || locale), [promptLocale, locale]);
 
   return (
-    <Card sx={{ height: '100%' }}>
-      <CardContent>
-        <Stack spacing={2.25}>
-          <Typography variant="h5">{t('session.title')}</Typography>
-          <Typography color="text.secondary">{t('session.subtitle')}</Typography>
+    <Stack spacing={2.5}>
+      <Stack spacing={1}>
+        <Typography variant="h6">{t('session.title')}</Typography>
+        <Typography variant="body2" color="text.secondary">{t('session.subtitle')}</Typography>
+      </Stack>
 
-          <Stack direction="row" spacing={1} flexWrap="wrap" alignItems="center">
-            <ToggleButtonGroup size="small" value={mode} exclusive onChange={(_e, value) => value && setMode(value)}>
-              <ToggleButton value="beginner">{t('mode.beginner')}</ToggleButton>
-              <ToggleButton value="technical">{t('mode.technical')}</ToggleButton>
-            </ToggleButtonGroup>
-            <Button size="small" variant="outlined" startIcon={<MenuBookIcon />} onClick={onOpenGlossary}>{t('button.glossary')}</Button>
-            <Button size="small" variant="outlined" startIcon={<DownloadIcon />} onClick={onExportTrace} disabled={!traceAvailable}>{t('button.exportTrace')}</Button>
-          </Stack>
+      <Stack direction="row" spacing={1} flexWrap="wrap" alignItems="center" useFlexGap>
+        <ToggleButtonGroup size="small" value={mode} exclusive onChange={(_e, value) => value && setMode(value)}>
+          <ToggleButton value="beginner">{t('mode.beginner')}</ToggleButton>
+          <ToggleButton value="technical">{t('mode.technical')}</ToggleButton>
+        </ToggleButtonGroup>
+        <Button size="small" variant="text" startIcon={<MenuBookIcon />} onClick={onOpenGlossary} sx={{ color: 'text.secondary' }}>{t('button.glossary')}</Button>
+      </Stack>
 
-          <TextField
-            select
-            label={t('language.label')}
-            value={localePreference}
-            onChange={(event) => setLocalePreference(event.target.value)}
-            helperText={promptLocale ? t('language.prompt', { language: getLanguageLabel(promptLocale) }) : t('language.effective', { language: getLanguageLabel(locale) })}
-          >
-            {LANGUAGE_OPTIONS.map((option) => <MenuItem key={option.value} value={option.value}>{option.label || t(option.labelKey)}</MenuItem>)}
-          </TextField>
+      <TextField
+        select
+        size="small"
+        label={t('language.label')}
+        value={localePreference}
+        onChange={(event) => setLocalePreference(event.target.value)}
+        helperText={promptLocale ? t('language.prompt', { language: getLanguageLabel(promptLocale) }) : null}
+      >
+        {LANGUAGE_OPTIONS.map((option) => <MenuItem key={option.value} value={option.value}>{option.label || t(option.labelKey)}</MenuItem>)}
+      </TextField>
 
-          <Divider />
+      <Divider sx={{ opacity: 0.5 }} />
 
-          <TextField label={t('field.prompt')} multiline minRows={4} value={prompt} onChange={(event) => setPrompt(event.target.value)} helperText={t('field.promptHelp')} />
+      <TextField label={t('field.prompt')} multiline minRows={3} value={prompt} onChange={(event) => setPrompt(event.target.value)} />
 
-          <Stack direction="row" spacing={1} flexWrap="wrap">
-            {examples.map((example) => (
-              <Button key={example} size="small" variant="text" startIcon={<AutoAwesomeIcon />} onClick={() => setPrompt(example)}>
-                {example}
-              </Button>
-            ))}
-          </Stack>
+      <Stack direction="row" spacing={0.5} flexWrap="wrap" useFlexGap>
+        {examples.map((example) => (
+          <Button key={example} size="small" variant="outlined" onClick={() => setPrompt(example)} sx={{ fontSize: '0.7rem', px: 1, py: 0.2 }}>
+            {example.slice(0, 20)}...
+          </Button>
+        ))}
+      </Stack>
 
-          <TextField select label={t('field.strategy')} value={decodingStrategy} onChange={(event) => setDecodingStrategy(event.target.value)}>
-            {STRATEGIES.map((strategy) => <MenuItem key={strategy} value={strategy}>{t(`strategy.${strategy}`)}</MenuItem>)}
-          </TextField>
+      <TextField select size="small" label={t('field.strategy')} value={decodingStrategy} onChange={(event) => setDecodingStrategy(event.target.value)}>
+        {STRATEGIES.map((strategy) => <MenuItem key={strategy} value={strategy}>{t(`strategy.${strategy}`)}</MenuItem>)}
+      </TextField>
 
-          <Stack spacing={1}>
-            <Typography gutterBottom>{t('field.seed', { value: seed })}</Typography>
-            <Slider min={1} max={9999} step={1} value={seed} onChange={(_e, value) => setSeed(value)} valueLabelDisplay="auto" />
-          </Stack>
+      <Stack spacing={0.5}>
+        <Typography variant="caption" sx={{ fontWeight: 600, color: 'text.secondary' }}>{t('field.seed', { value: seed })}</Typography>
+        <Slider size="small" min={1} max={9999} step={1} value={seed} onChange={(_e, value) => setSeed(value)} />
+      </Stack>
 
-          <Stack spacing={1}>
-            <Typography gutterBottom>{t('field.maxNewTokens', { value: maxNewTokens })}</Typography>
-            <Slider min={1} max={6} step={1} value={maxNewTokens} onChange={(_e, value) => setMaxNewTokens(value)} valueLabelDisplay="auto" />
-          </Stack>
+      <Stack spacing={0.5}>
+        <Typography variant="caption" sx={{ fontWeight: 600, color: 'text.secondary' }}>{t('field.maxNewTokens', { value: maxNewTokens })}</Typography>
+        <Slider size="small" min={1} max={6} step={1} value={maxNewTokens} onChange={(_e, value) => setMaxNewTokens(value)} />
+      </Stack>
 
-          <Stack spacing={1}>
-            <Typography gutterBottom>{t('field.topK', { value: topK })}</Typography>
-            <Slider min={3} max={20} step={1} value={topK} onChange={(_e, value) => setTopK(value)} valueLabelDisplay="auto" />
-          </Stack>
+      <Stack spacing={0.5}>
+        <Typography variant="caption" sx={{ fontWeight: 600, color: 'text.secondary' }}>{t('field.topK', { value: topK })}</Typography>
+        <Slider size="small" min={3} max={20} step={1} value={topK} onChange={(_e, value) => setTopK(value)} />
+      </Stack>
 
-          <Stack spacing={1}>
-            <Typography gutterBottom>{t('field.topP', { value: Number(topP).toFixed(2) })}</Typography>
-            <Slider min={0.1} max={1} step={0.05} value={topP} onChange={(_e, value) => setTopP(value)} valueLabelDisplay="auto" />
-          </Stack>
+      {error ? <Alert severity="error" sx={{ py: 0 }}>{error}</Alert> : null}
 
-          <Stack spacing={1}>
-            <Typography gutterBottom>{t('field.temperature', { value: Number(temperature).toFixed(2) })}</Typography>
-            <Slider min={0.2} max={2} step={0.05} value={temperature} onChange={(_e, value) => setTemperature(value)} valueLabelDisplay="auto" />
-          </Stack>
-
-          <Stack direction="row" spacing={1} flexWrap="wrap">
-            <Chip icon={loadingModel ? <CircularProgress size={16} color="inherit" /> : <SmartToyIcon />} label={model.loaded ? t('status.ready', { modelId: model.modelId }) : t('status.modelNotLoaded')} color={model.loaded ? 'success' : 'warning'} variant={model.loaded ? 'filled' : 'outlined'} />
-            {model.loadedAt ? <Chip label={t('status.loadedAt', { time: new Date(model.loadedAt).toLocaleTimeString(locale) })} /> : null}
-          </Stack>
-
-          {error ? <Alert severity="error">{error}</Alert> : null}
-
-          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.25}>
-            <Button variant="outlined" startIcon={<RefreshIcon />} onClick={onLoadModel} disabled={loadingModel || running}>{loadingModel ? t('button.loading') : t('button.reloadModel')}</Button>
-            <Button variant="contained" startIcon={<PlayArrowIcon />} onClick={onRun} disabled={running || loadingModel || !model.loaded}>{running ? t('button.running') : t('button.run')}</Button>
-          </Stack>
-
-          <Stack direction="row" spacing={1}>
-            <Button variant="text" onClick={onBack} disabled={activeStep <= 0}>{t('button.previous')}</Button>
-            <Button variant="text" onClick={onNext} disabled={activeStep >= maxStep}>{t('button.next')}</Button>
-            <Button variant="text" onClick={onReset}>{t('button.reset')}</Button>
-          </Stack>
+      <Stack spacing={1}>
+        <Button fullWidth variant="contained" startIcon={<PlayArrowIcon />} onClick={onRun} disabled={running || loadingModel || !model.loaded} sx={{ py: 1 }}>{running ? t('button.running') : t('button.run')}</Button>
+        <Stack direction="row" spacing={1}>
+          <Button fullWidth size="small" variant="outlined" startIcon={<RefreshIcon />} onClick={onLoadModel} disabled={loadingModel || running}>{loadingModel ? '...' : t('button.reloadModel')}</Button>
+          <Button fullWidth size="small" variant="outlined" startIcon={<DownloadIcon />} onClick={onExportTrace} disabled={!traceAvailable}>{t('button.exportTrace')}</Button>
         </Stack>
-      </CardContent>
-    </Card>
+      </Stack>
+
+      <Stack direction="row" spacing={1} justifyContent="space-between">
+        <Button size="small" variant="text" onClick={onBack} disabled={activeStep <= 0}>{t('button.previous')}</Button>
+        <Button size="small" variant="text" onClick={onNext} disabled={activeStep >= maxStep}>{t('button.next')}</Button>
+        <Button size="small" variant="text" onClick={onReset} sx={{ color: 'text.secondary' }}>{t('button.reset')}</Button>
+      </Stack>
+    </Stack>
   );
 }
