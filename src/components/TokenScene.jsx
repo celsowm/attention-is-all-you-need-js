@@ -57,10 +57,10 @@ export default function TokenScene({ tokens, tokensDisplay, focusIndex, attentio
   const activeIndex = focusIndex ?? Math.max(0, (tokens?.length || 1) - 1);
 
   return (
-    <Card sx={{ height: '100%' }}>
-      <CardContent sx={{ height: 420 }}>
-        <Typography variant="h5" sx={{ mb: 1.5 }}>{t('scene.title')}</Typography>
-        <Canvas camera={{ position: [0, 0, 7], fov: 52 }}>
+    <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+      <CardContent sx={{ flex: 1, p: 2.5, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+        <Typography variant="h6" sx={{ mb: 1.5 }}>{t('scene.title')}</Typography>
+        <Canvas camera={{ position: [0, 0, 7], fov: 52 }} style={{ background: '#020617', borderRadius: 12 }}>
           <ambientLight intensity={1.35} />
           <pointLight position={[4, 4, 4]} intensity={18} />
           <AttentionLinks tokensCount={labels.length} focusIndex={activeIndex} attention={attention} />

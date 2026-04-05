@@ -11,23 +11,28 @@ export default function HeroHeader({ model }) {
   return (
     <Box
       sx={{
-        p: { xs: 3, md: 4 },
-        borderRadius: 6,
-        background:
-          'radial-gradient(circle at top right, rgba(124,77,255,0.24), transparent 35%), linear-gradient(135deg, rgba(38,198,218,0.18), rgba(124,77,255,0.08))',
-        border: '1px solid rgba(255,255,255,0.08)',
+        px: 3,
+        py: 1.5,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        borderBottom: '1px solid rgba(255,255,255,0.06)',
+        bgcolor: 'background.paper',
       }}
     >
-      <Stack spacing={2}>
-        <Stack direction="row" spacing={1} flexWrap="wrap">
-          <Chip icon={<AutoAwesomeIcon />} label={t('hero.kicker1')} color="primary" />
-          <Chip icon={<BoltIcon />} label={t('hero.kicker2')} color="secondary" />
-          <Chip icon={<MemoryIcon />} label={t('hero.kicker3')} variant="outlined" />
-          <Chip icon={<HubIcon />} label={model.loaded ? t('hero.activeModel', { modelId: model.modelId }) : t('hero.loadingModel')} variant="outlined" />
+      <Stack direction="row" spacing={2} alignItems="center">
+        <Typography variant="h6" sx={{ color: 'primary.main', fontWeight: 800 }}>
+          attention-is-all-you-need-js
+        </Typography>
+        <Stack direction="row" spacing={1} sx={{ display: { xs: 'none', md: 'flex' } }}>
+          <Chip size="small" icon={<AutoAwesomeIcon />} label={t('hero.kicker1')} variant="outlined" />
+          <Chip size="small" icon={<BoltIcon />} label={t('hero.kicker2')} variant="outlined" />
+          <Chip size="small" icon={<HubIcon />} label={model.loaded ? t('hero.activeModel', { modelId: model.modelId }) : t('hero.loadingModel')} color="primary" />
         </Stack>
-        <Typography variant="h3">{t('app.title')}</Typography>
-        <Typography color="text.secondary" maxWidth={900}>{t('hero.subtitle')}</Typography>
       </Stack>
+      <Typography variant="body2" color="text.secondary" sx={{ display: { xs: 'none', lg: 'block' }, maxWidth: 600, textAlign: 'right' }}>
+        {t('hero.subtitle')}
+      </Typography>
     </Box>
   );
 }

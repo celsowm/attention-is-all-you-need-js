@@ -1,4 +1,4 @@
-import { Card, CardContent, Chip, Divider, Stack, Table, TableBody, TableCell, TableHead, TableRow, Typography } from '@mui/material';
+import { Box, Card, CardContent, Chip, Divider, Stack, Table, TableBody, TableCell, TableHead, TableRow, Typography } from '@mui/material';
 import JsonBlock from './JsonBlock';
 import { useI18n } from '../i18n/I18nProvider';
 
@@ -44,7 +44,7 @@ function DidacticBlock({ didactic }) {
   );
 }
 
-export default function StepDetails({ step, mode = 'technical' }) {
+export default function StepDetails({ step, generationStep, mode = 'technical' }) {
   const { t } = useI18n();
   if (!step) return null;
 
@@ -198,14 +198,50 @@ export default function StepDetails({ step, mode = 'technical' }) {
   }
 
   if (step.id === 'decode') {
-    body = (
-      <Stack spacing={1.5}>
-        <Typography><strong>{t('details.completion')}</strong> {step.payload.completion}</Typography>
-        <Typography><strong>{t('details.chosenToken')}</strong> {step.payload.nextToken}</Typography>
-        <Typography color="text.secondary">{t('chip.strategy', { value: t(`strategy.${step.payload.decodingStrategy || 'greedy'}`) })}</Typography>
-        {!isBeginner ? <JsonBlock value={step.payload.generationSteps} /> : <Typography color="text.secondary">{t('details.decodeHint')}</Typography>}
-      </Stack>
-    );
+    const current = generationStep || (step.payload.generationSteps ? step.payload.generationSteps[0] : null);
+    if (current) {
+      body = (
+        <Stack spacing={2}>
+          <Stack spacing={1}>
+            <Typography variant="subtitle2">{t('player.state')}</Typography>
+            <Typography variant="body2"><strong>{t('player.input')}</strong> {current.inputText}</Typography>
+            <Typography variant="body2"><strong>{t('player.output')}</strong> {current.completion}</Typography>
+            <Typography variant="body2"><strong>{t('player.seed')}</strong> {current.sampled ? current.sampleDraw : 'deterministic'}</Typography>
+          </Stack>
+          <Divider />
+          <Box>
+            <Typography variant="subtitle2" sx={{ mb: 1 }}>{t('player.candidates')}</Typography>
+            <Table size="small">
+              <TableHead>
+                <TableRow>
+                  <TableCell>{t('table.token')}</TableCell>
+                  <TableCell>{t('table.logit')}</TableCell>
+                  <TableCell>{t('table.probability')}</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {current.topLogits.map((item) => (
+                  <TableRow key={`${current.step}-${item.tokenId}`} selected={item.token === current.chosenTokenText}>
+                    <TableCell sx={{ fontSize: '0.75rem' }}>{item.token}</TableCell>
+                    <TableCell sx={{ fontSize: '0.75rem' }}>{item.logit}</TableCell>
+                    <TableCell sx={{ fontSize: '0.75rem' }}>{item.probability}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </Box>
+        </Stack>
+      );
+    } else {
+      body = (
+        <Stack spacing={1.5}>
+          <Typography><strong>{t('details.completion')}</strong> {step.payload.completion}</Typography>
+          <Typography><strong>{t('details.chosenToken')}</strong> {step.payload.nextToken}</Typography>
+          <Typography color="text.secondary">{t('chip.strategy', { value: t(`strategy.${step.payload.decodingStrategy || 'greedy'}`) })}</Typography>
+          {!isBeginner ? <JsonBlock value={step.payload.generationSteps} /> : <Typography color="text.secondary">{t('details.decodeHint')}</Typography>}
+        </Stack>
+      );
+    }
   }
 
   if (step.id === 'residual') {
@@ -224,16 +260,18 @@ export default function StepDetails({ step, mode = 'technical' }) {
   }
 
   return (
-    <Card sx={{ height: '100%' }}>
-      <CardContent>
+    <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+      <CardContent sx={{ p: 2.5, '&:last-child': { pb: 2.5 } }}>
         <Stack spacing={2}>
-          <Stack spacing={0.75}>
-            <Typography variant="h5">{step.label}</Typography>
-            <Typography color="text.secondary">{step.description}</Typography>
+          <Stack spacing={0.5}>
+            <Typography variant="h6">{step.label}</Typography>
+            <Typography variant="body2" color="text.secondary">{step.description}</Typography>
           </Stack>
           <DidacticBlock didactic={step.didactic} />
-          <Divider />
-          {body}
+          <Divider sx={{ opacity: 0.5 }} />
+          <Box sx={{ mt: 1 }}>
+            {body}
+          </Box>
         </Stack>
       </CardContent>
     </Card>
