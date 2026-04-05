@@ -1,5 +1,5 @@
 import { Card, CardContent, Typography } from '@mui/material';
-import { Float, OrbitControls, Text } from '@react-three/drei';
+import { Billboard, Float, OrbitControls, Text } from '@react-three/drei';
 import { Canvas } from '@react-three/fiber';
 import { useMemo } from 'react';
 import * as THREE from 'three';
@@ -20,9 +20,11 @@ function TokenOrb({ label, index, total, active }) {
         <sphereGeometry args={[active ? 0.34 : 0.24, 32, 32]} />
         <meshStandardMaterial color={active ? '#7c4dff' : '#26c6da'} emissive={active ? '#7c4dff' : '#1a3c66'} emissiveIntensity={0.9} />
       </mesh>
-      <Text position={[position.x, position.y + 0.5, position.z]} color="white" fontSize={0.22} anchorX="center" anchorY="middle">
-        {label}
-      </Text>
+      <Billboard position={[position.x, position.y + 0.5, position.z]} follow>
+        <Text color="white" fontSize={0.22} anchorX="center" anchorY="middle">
+          {label}
+        </Text>
+      </Billboard>
     </Float>
   );
 }

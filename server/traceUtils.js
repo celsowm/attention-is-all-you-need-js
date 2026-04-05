@@ -37,10 +37,19 @@ export function logSumExpDenominator(values, temperature = 1) {
 
 export function normalizeTokenText(text) {
   if (!text) return '∅';
-  return String(text).replace(/\n/g, '\\n');
+  return String(text)
+    .replace(/^Ġ+/u, (match) => '␠'.repeat(match.length))
+    .replace(/^Ċ+/u, (match) => '⏎'.repeat(match.length))
+    .replace(/\n/g, '\\n')
+    .replace(/\t/g, '\\t');
 }
 
 export function displayToken(token) {
   if (token == null) return '∅';
-  return String(token).replace(/\n/g, '⏎').replace(/\t/g, '⇥').replace(/ /g, '␠');
+  return String(token)
+    .replace(/^Ġ+/u, (match) => '␠'.repeat(match.length))
+    .replace(/^Ċ+/u, (match) => '⏎'.repeat(match.length))
+    .replace(/\n/g, '⏎')
+    .replace(/\t/g, '⇥')
+    .replace(/ /g, '␠');
 }

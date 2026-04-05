@@ -8,23 +8,26 @@ import { useI18n } from '../i18n/I18nProvider';
 export default function GenerationPlayer({ generationSteps, selectedStep, onStepChange }) {
   const { t } = useI18n();
   const [playing, setPlaying] = useState(false);
+  const stepsLength = generationSteps?.length ?? 0;
 
   useEffect(() => {
-    if (!playing || !generationSteps?.length) return undefined;
+    if (!playing || !stepsLength) return undefined;
     const timer = globalThis.setInterval(() => {
       onStepChange((current) => {
         const next = Number(current) + 1;
-        if (next >= generationSteps.length) {
-          setPlaying(false);
-          return generationSteps.length - 1;
-        }
-        return next;
+        return next >= stepsLength ? stepsLength - 1 : next;
       });
     }, 1200);
     return () => globalThis.clearInterval(timer);
-  }, [playing, generationSteps, onStepChange]);
+  }, [playing, stepsLength, onStepChange]);
 
-  if (!generationSteps?.length) return null;
+  useEffect(() => {
+    if (playing && selectedStep >= stepsLength - 1) {
+      setPlaying(false);
+    }
+  }, [playing, selectedStep, stepsLength]);
+
+  if (!stepsLength) return null;
 
   const current = generationSteps[selectedStep] ?? generationSteps[0];
 
