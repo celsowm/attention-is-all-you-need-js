@@ -26,6 +26,7 @@ export async function getModelState() {
     try {
       const tokenizer = await AutoTokenizer.from_pretrained(state.modelId);
       const model = await AutoModelForCausalLM.from_pretrained(state.modelId, {
+        model_file_name: 'decoder_model_merged',
         dtype: 'q8',
         device: 'cpu',
       });
